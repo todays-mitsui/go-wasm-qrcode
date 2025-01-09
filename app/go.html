@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator by WebAssembly</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/go_wasm_exec.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const go = new Go();
+      const wasm = await WebAssembly.instantiateStreaming(fetch("wasm/go.wasm"), go.importObject);
+      go.run(wasm.instance);
+
+      const showQrcode = () => {
+        const b64Png = genQrcodePng(input.value);
+        if (b64Png) {
+          output.src = `data:image/png;base64,${b64Png}`;
+        }
+      };
+
+      input.addEventListener("input", showQrcode);
+
+      input.value = location.href;
+      showQrcode();
+    });
+  </script>
+</head>
+<body>
+  <h1>QR Code Generator</h1>
+  <form>
+    <input id="input" type="text" autofocus>
+    <label for="input">
+      <img id="output" src="" alt="QR Code">
+    </label>
+  </form>
+</body>
+</html>

@@ -1,0 +1,7 @@
+body {
+  max-width: 480px;
+}
+
+form {
+  display: grid;
+}

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator by WebAssembly</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/tinygo_wasm_exec.js"></script>
+  <script>
+    /**
+     * @returns {[number, number]}
+     */
+    function writeString(wasm, str) {
+      let utf8str = new TextEncoder().encode(str);
+
+      const ptr = wasm.instance.exports.getBuffer(utf8str.length);
+      const memory = new Uint8Array(wasm.instance.exports.memory.buffer);
+      memory.set(utf8str, ptr);
+
+      return [ptr, utf8str.length];
+    }
+
+    /**
+     * @returns {string}
+     */
+    function readString(wasm, ptr, length) {
+      const buffer = wasm.instance.exports.memory.buffer;
+      const memory = new Uint8Array(buffer);
+      const utf8str = memory.slice(ptr, ptr + length);
+      return new TextDecoder().decode(utf8str);
+    }
+
+    /**
+     * @returns {string}
+     */
+    function genQrcodePng(wasm, data) {
+      let input = writeString(wasm, data);
+      const ptr = wasm.instance.exports.genQrcodePng(...input);
+      const bufSize = wasm.instance.exports.getBufSize();
+      return readString(wasm, ptr, bufSize);
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const go = new Go();
+      const wasm = await WebAssembly.instantiateStreaming(fetch("wasm/tinygo.wasm"), go.importObject);
+      go.run(wasm.instance);
+
+      const showQrcode = () => {
+        const b64Png = genQrcodePng(wasm, input.value);
+        if (b64Png) {
+          output.src = `data:image/png;base64,${b64Png}`;
+        }
+      };
+
+      input.addEventListener("input", showQrcode);
+
+      input.value = location.href;
+      showQrcode();
+    });
+  </script>
+</head>
+<body>
+  <h1>QR Code Generator</h1>
+  <form>
+    <input id="input" type="text" autofocus>
+    <label for="input">
+      <img id="output" src="" alt="QR Code">
+    </label>
+  </form>
+</body>
+</html>
