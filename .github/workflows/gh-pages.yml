@@ -40,19 +40,6 @@ jobs:
       - name: Install TinyGo
         run: sudo dpkg -i ~/.cache/tinygo/tinygo_${TINYGO_VERSION}_amd64.deb
 
-      # - name: Install dependencies
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install -y \
-      #       clang \
-      #       qemu-system
-
-      # - name: Install TinyGo
-      #   run: |
-      #     TINYGO_VERSION="0.35.0"
-      #     wget https://github.com/tinygo-org/tinygo/releases/download/v${TINYGO_VERSION}/tinygo_${TINYGO_VERSION}_amd64.deb
-      #     sudo dpkg -i tinygo_${TINYGO_VERSION}_amd64.deb
-
       - name: Check versions
         run: |
           go version
@@ -63,7 +50,7 @@ jobs:
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/page' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
