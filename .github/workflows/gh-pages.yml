@@ -19,18 +19,41 @@ jobs:
         with:
           go-version: "^1.23.2"
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            clang \
-            qemu-system
+      - name: Set TinyGo version
+        id: tinygo-version
+        run: echo "TINYGO_VERSION=0.35.0" >> $GITHUB_ENV
 
-      - name: Install TinyGo
+      - name: Cache TinyGo directory
+        id: cache-tinygo
+        uses: actions/cache@v4
+        with:
+          path: ~/.tinygo
+          key: ${{ runner.os }}-tinygo-${{ env.TINYGO_VERSION }}
+
+      - name: Download & Install TinyGo (user dir)
+        if: steps.cache-tinygo.outputs.cache-hit != 'true'
         run: |
-          TINYGO_VERSION="0.35.0"
-          wget https://github.com/tinygo-org/tinygo/releases/download/v${TINYGO_VERSION}/tinygo_${TINYGO_VERSION}_amd64.deb
-          sudo dpkg -i tinygo_${TINYGO_VERSION}_amd64.deb
+          wget https://github.com/tinygo-org/tinygo/releases/download/v${TINYGO_VERSION}/tinygo_${TINYGO_VERSION}_amd64.tar.gz \
+            -O /tmp/tinygo.tar.gz
+
+          mkdir -p ~/.tinygo
+          tar -xzf /tmp/tinygo.tar.gz -C ~/.tinygo --strip-components=1
+
+      - name: Add TinyGo to PATH
+        run: echo "PATH=\$HOME/.tinygo/bin:\$PATH" >> $GITHUB_ENV
+
+      # - name: Install dependencies
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y \
+      #       clang \
+      #       qemu-system
+
+      # - name: Install TinyGo
+      #   run: |
+      #     TINYGO_VERSION="0.35.0"
+      #     wget https://github.com/tinygo-org/tinygo/releases/download/v${TINYGO_VERSION}/tinygo_${TINYGO_VERSION}_amd64.deb
+      #     sudo dpkg -i tinygo_${TINYGO_VERSION}_amd64.deb
 
       - name: Check versions
         run: |
@@ -42,7 +65,7 @@ jobs:
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
-        # if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/main' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
