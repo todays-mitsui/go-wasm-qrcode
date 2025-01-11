@@ -1,0 +1,67 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "^1.23.2"
+
+      - name: Set TinyGo version
+        id: tinygo-version
+        run: echo "TINYGO_VERSION=0.35.0" >> $GITHUB_ENV
+
+      - name: Cache TinyGo .deb
+        id: cache-tinygo
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/tinygo
+          key: ${{ runner.os }}-tinygo-${{ env.TINYGO_VERSION }}
+
+      - name: Download TinyGo
+        if: steps.cache-tinygo.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/.cache/tinygo
+          wget https://github.com/tinygo-org/tinygo/releases/download/v${TINYGO_VERSION}/tinygo_${TINYGO_VERSION}_amd64.deb \
+            -O ~/.cache/tinygo/tinygo_${TINYGO_VERSION}_amd64.deb
+
+      - name: Install TinyGo
+        run: sudo dpkg -i ~/.cache/tinygo/tinygo_${TINYGO_VERSION}_amd64.deb
+
+      - name: Check versions
+        run: |
+          go version
+          tinygo version
+
+      - name: Build
+        run: make
+
+      - name: Upload artifact to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
