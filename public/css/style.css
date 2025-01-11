@@ -5,3 +5,14 @@ body {
 form {
   display: grid;
 }
+
+footer ul {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0;
+
+  li {
+    margin: 0 0 0 1em;
+  }
+}
