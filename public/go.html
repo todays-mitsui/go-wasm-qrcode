@@ -13,6 +13,9 @@
       const wasm = await WebAssembly.instantiateStreaming(fetch("wasm/go.wasm"), go.importObject);
       go.run(wasm.instance);
 
+      console.info('exports: ', wasm.instance.exports);
+      console.info('genQrcodePng: ', genQrcodePng);
+
       const showQrcode = () => {
         const b64Png = genQrcodePng(input.value);
         if (b64Png) {

@@ -46,6 +46,9 @@
       const wasm = await WebAssembly.instantiateStreaming(fetch("wasm/tinygo.wasm"), go.importObject);
       go.run(wasm.instance);
 
+      console.info('exports: ', wasm.instance.exports);
+      console.info('genQrcodePng: ', wasm.instance.exports.genQrcodePng);
+
       const showQrcode = () => {
         const b64Png = genQrcodePng(wasm, input.value);
         if (b64Png) {
