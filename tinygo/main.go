@@ -13,19 +13,14 @@ func main() {
 	<-c
 }
 
-//go:wasmexport getBuffer
-func getBuffer(length uint32) *byte {
-	buf := make([]byte, length)
-	return &buf[0]
-}
-
 var bufSize uint32
 
-func stringToPtr(s string) (uint32, uint32) {
+func stringToPtr(s string) uint32 {
 	buf := []byte(s)
 	ptr := &buf[0]
 	unsafePtr := uintptr(unsafe.Pointer(ptr))
-	return uint32(unsafePtr), uint32(len(buf))
+	bufSize = uint32(len(buf))
+	return uint32(unsafePtr)
 }
 
 //go:wasmexport genQrcodePng
@@ -38,9 +33,7 @@ func genQrcodePng(data string) uint32 {
 
 	b64Png := b64.StdEncoding.EncodeToString(png)
 
-	ptr, size := stringToPtr(b64Png)
-	bufSize = size
-	return ptr
+	return stringToPtr(b64Png)
 }
 
 //go:wasmexport getBufSize

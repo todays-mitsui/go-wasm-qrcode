@@ -14,7 +14,7 @@
     function writeString(wasm, str) {
       let utf8str = new TextEncoder().encode(str);
 
-      const ptr = wasm.instance.exports.getBuffer(utf8str.length);
+      const ptr = wasm.instance.exports.malloc(utf8str.length);
       const memory = new Uint8Array(wasm.instance.exports.memory.buffer);
       memory.set(utf8str, ptr);
 
