@@ -12,6 +12,7 @@ footer ul {
   gap: 1.2rem;
   padding: 0;
   list-style: none;
+  font-size: .9rem;
 
   li {
     margin: 0;
