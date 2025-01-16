@@ -15,16 +15,15 @@ func main() {
 
 var bufSize uint32
 
-func stringToPtr(s string) uint32 {
+func stringToPtr(s string) unsafe.Pointer {
 	buf := []byte(s)
-	ptr := &buf[0]
-	unsafePtr := uintptr(unsafe.Pointer(ptr))
 	bufSize = uint32(len(buf))
-	return uint32(unsafePtr)
+	ptr := &buf[0]
+	return unsafe.Pointer(ptr)
 }
 
 //go:wasmexport genQrcodePng
-func genQrcodePng(data string) uint32 {
+func genQrcodePng(data string) unsafe.Pointer {
 	png, err := qrcode.Encode(data, qrcode.Medium, 800)
 	if err != nil {
 		fmt.Println("Error:", err)
